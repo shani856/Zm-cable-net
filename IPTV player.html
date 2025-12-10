@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IPTV Player with Groups</title>
+  <style>
+    body { margin:0; font-family: Arial, sans-serif; background:#111; color:#fff; }
+
+    .player-wrap { position:relative; max-width:1200px; margin:0 auto; background:#000; }
+    video { width:100%; height:300px; background:#000; display:block; }
+
+    .top-controls { position:absolute; top:12px; left:50%; transform:translateX(-50%);
+      display:flex; gap:8px; background:rgba(0,0,0,0.6); padding:6px 10px; border-radius:8px; z-index:10; }
+    .top-controls button { background:#2196f3; color:#fff; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:14px; }
+    .top-controls button:hover { background:#0d8bf2; }
+    .vol-range { width:120px; }
+
+    .ticker { position:absolute; bottom:0; left:0; width:100%; background:#c62828; color:#fff200;
+      overflow:hidden; white-space:nowrap; font-weight:bold; font-size:16px; line-height:35px; height:35px; }
+    .ticker span { display:inline-block; padding-left:100%; animation:scroll-left 15s linear infinite; }
+    @keyframes scroll-left { 0%{transform:translateX(0);} 100%{transform:translateX(-100%);} }
+
+    /* Group tabs */
+    .group-tabs { display:flex; justify-content:center; gap:10px; padding:12px; background:#222; }
+    .group-tabs button { padding:10px 16px; border:none; border-radius:8px; background:#444; color:#fff; cursor:pointer; }
+    .group-tabs button:hover { background:#666; }
+
+    /* Channel list */
+    .channel-list { display:none; flex-wrap:wrap; justify-content:center; gap:10px; padding:15px; background:#1a1a1a; }
+    .channel-list.active { display:flex; }
+    .channel-list button { background:#222; border:none; border-radius:8px; cursor:pointer; padding:6px; width:120px; height:90px; }
+    .channel-list button img { max-width:100%; max-height:100%; border-radius:6px; }
+    .channel-list button:hover { background:#444; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+
+  <div class="player-wrap" id="playerWrap">
+    <div class="top-controls">
+      <button onclick="togglePlay()">⏯️</button>
+      <button onclick="decreaseVolume()">➖</button>
+      <input id="volRange" class="vol-range" type="range" min="0" max="100" step="1" value="100" onchange="setVolumeFromRange(this)">
+      <button onclick="increaseVolume()">➕</button>
+      <button id="muteBtn" onclick="toggleMute()">🔊</button>
+      <button onclick="toggleFullscreen()">⛶</button>
+    </div>
+    <video id="player" playsinline></video>
+    <div class="ticker"><span>⚡ Live IPTV Streaming | Powered by Zeshan Ali ⚡</span></div>
+  </div>
+
+  <!-- Group Tabs -->
+  <div class="group-tabs">
+    <button onclick="showGroup('news')">📰 News</button>
+    <button onclick="showGroup('drama')">🎭 Drama</button>
+    <button onclick="showGroup('sports')">🏆 Sports</button>
+  </div>
+
+  <!-- News Channels -->
+  <div id="news" class="channel-list active">
+    <button onclick="playChannel('http://your-server-ip:8080/news1.m3u8')"><img src="logos/news1.png" alt="News 1"></button>
+    <button onclick="playChannel('http://your-server-ip:8080/news2.m3u8')"><img src="logos/news2.png" alt="News 2"></button>
+  </div>
+
+  <!-- Drama Channels -->
+  <div id="drama" class="channel-list">
+    <button onclick="playChannel('http://otv.tv:8080/live/ze4/12341234/221250.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Zee_TV_Logo_2014.png/250px-Zee_TV_Logo_2014.png" alt="Drama 1"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/12341234/221251.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/commons/7/71/Sony_Entertainment_Television_logo.png" alt="Drama 2"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/12341234/221252.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/en/d/d7/StarPlus_Logo.png" alt="Drama 3"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/12341234/221253.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/%26TV_2025.svg/1200px-%26TV_2025.svg.png" alt="Drama 4"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/12341234/221254.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/en/d/d7/StarPlus_Logo.png" alt="Drama 5"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/12341234/221256.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/en/d/d7/StarPlus_Logo.png" alt="Drama 6"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/12341234/221257.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/en/d/d7/StarPlus_Logo.png" alt="Drama 7"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/http://otv.to:8080/live/ze4/12341234/221250.m3u8/221259.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/en/d/d7/StarPlus_Logo.png" alt="Drama 8"></button>
+    <button onclick="playChannel('http://otv.to:8080/live/ze4/12341234/221260.m3u8')"><img src="https://upload.wikimedia.org/wikipedia/en/d/d7/StarPlus_Logo.png" alt="Drama 9"></button>
+  </div>
+
+  <!-- Sports Channels -->
+  <div id="sports" class="channel-list">
+    <button onclick="playChannel('http://your-server-ip:8080/sports1.m3u8')"><img src="logos/sports1.png" alt="Sports 1"></button>
+    <button onclick="playChannel('http://your-server-ip:8080/sports2.m3u8')"><img src="logos/sports2.png" alt="Sports 2"></button>
+  </div>
+
+  <script>
+    const video = document.getElementById('player');
+    const volRange = document.getElementById('volRange');
+    const muteBtn = document.getElementById('muteBtn');
+    let hls;
+
+    function playChannel(url) {
+      if (hls) { hls.destroy(); hls = null; }
+      if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, ()=>video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.addEventListener('loadedmetadata', ()=>video.play(), { once:true });
+      }
+    }
+
+    function showGroup(group) {
+      document.querySelectorAll('.channel-list').forEach(el=>el.classList.remove('active'));
+      document.getElementById(group).classList.add('active');
+    }
+
+    function togglePlay() { video.paused ? video.play() : video.pause(); }
+    function increaseVolume() { video.volume=Math.min(1, video.volume+0.1); updateUI(); }
+    function decreaseVolume() { video.volume=Math.max(0, video.volume-0.1); updateUI(); }
+    function setVolumeFromRange(r) { video.volume=r.value/100; video.muted=(video.volume===0); updateUI(); }
+    function toggleMute() { video.muted=!video.muted; updateUI(); }
+    function updateUI() {
+      volRange.value=Math.round(video.volume*100);
+      muteBtn.textContent = video.muted||video.volume===0?'🔈':video.volume<0.5?'🔉':'🔊';
+    }
+    function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    video.requestFullscreen?.();
+  } else {
+    document.exitFullscreen?.();
+  }
+}
+  </script>
+</body>
+</html>
